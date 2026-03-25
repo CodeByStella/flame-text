@@ -1,5 +1,5 @@
 {
-  "name": "@aesop/flame-text",
+  "name": "@codebystella/flame-text",
   "version": "0.1.0",
   "description": "Embeddable oil-on-fire text effect with transparent canvas overlay",
   "type": "module",

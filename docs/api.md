@@ -36,5 +36,5 @@ Queries `document.querySelectorAll('[data-flame-text]')` and calls `mount(el, {}
 Published in `dist/*.d.ts`; import from package root:
 
 ```ts
-import type { FlameTextOptions, FlameTextHandle } from '@aesop/flame-text'
+import type { FlameTextOptions, FlameTextHandle } from '@codebystella/flame-text'
 ```

@@ -5,14 +5,14 @@ Embeddable **oil-on-fire** text: transparent canvas overlay, glyph-aware emissio
 ## Install
 
 ```bash
-npm install @aesop/flame-text
+npm install @codebystella/flame-text
 ```
 
 ## Quick embed (ESM)
 
 ```html
 <script type="module">
-  import { mount } from './node_modules/@aesop/flame-text/dist/flame-text.js'
+  import { mount } from './node_modules/@codebystella/flame-text/dist/flame-text.js'
   mount('#hero', { temperature: 0.65, intensity: 1 })
 </script>
 ```
