@@ -1,0 +1,59 @@
+{
+  "name": "@aesop/flame-text",
+  "version": "0.1.0",
+  "description": "Embeddable oil-on-fire text effect with transparent canvas overlay",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md",
+    "docs",
+    "LICENSE",
+    "CONTRIBUTING.md"
+  ],
+  "main": "./dist/flame-text.js",
+  "module": "./dist/flame-text.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/flame-text.js",
+      "default": "./dist/flame-text.js"
+    },
+    "./iife": "./dist/flame-text.iife.js"
+  },
+  "scripts": {
+    "dev": "npx vite --config vite.config.ts",
+    "build": "npx vite build --config vite.lib.config.ts && npx tsc -p tsconfig.build.json",
+    "test": "npx vitest run",
+    "test:watch": "npx vitest",
+    "test:coverage": "npx vitest run --coverage",
+    "lint": "npx eslint .",
+    "format": "npx prettier --write ."
+  },
+  "keywords": [
+    "canvas",
+    "particles",
+    "text",
+    "fire"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "opentype.js": "^1.3.4",
+    "simplex-noise": "^4.0.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.15.0",
+    "@types/node": "^22.10.1",
+    "@types/opentype.js": "^1.3.9",
+    "@vitest/coverage-v8": "^2.1.6",
+    "eslint": "^9.15.0",
+    "eslint-config-prettier": "^9.1.0",
+    "globals": "^15.12.0",
+    "happy-dom": "^15.11.6",
+    "prettier": "^3.4.1",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.16.0",
+    "vite": "^6.4.1",
+    "vitest": "^2.1.6"
+  }
+}

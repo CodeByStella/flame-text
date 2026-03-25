@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FlameText demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="page">
+      <h1 id="headline" class="headline">FLAME</h1>
+      <p class="hint">Drag the sliders — background stays visible through transparent canvas.</p>
+      <div class="controls">
+        <label>
+          Temperature
+          <input id="temp" type="range" min="0" max="100" value="65" />
+        </label>
+        <label>
+          Intensity
+          <input id="int" type="range" min="0" max="150" value="100" />
+        </label>
+        <label class="check">
+          <input id="ign" type="checkbox" checked />
+          Ignition intro
+        </label>
+      </div>
+    </div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
