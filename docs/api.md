@@ -12,6 +12,7 @@
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
+| `flamePadding` | `FlamePadding` | — | Extra canvas area beyond the text box so rising flames are not clipped. Defaults: generous **top** (≈ `1.2em` or **55%** of text height, min 56px), **x** ≈ `0.45em` (min 24px), **bottom** ≈ `0.45em` (min 20px). |
 | `fontUrl` | `string` | — | Direct URL to a font file (woff/woff2/ttf/otf). **Recommended** for reliable outlines + CORS. |
 | `temperature` | `number` | `0.65` | Heat: cooler = slower, redder; hotter = faster, brighter core. |
 | `intensity` | `number` | `1` | Overall spawn/render strength. |
@@ -19,6 +20,14 @@
 | `wind` | `number` | `0` | Horizontal bias `-1…1`. |
 | `respectReducedMotion` | `boolean` | `true` | If `true` and `prefers-reduced-motion: reduce`, show a static glow instead of particles. |
 | `ignition` | `boolean \| IgnitionOptions` | `false` | Intro: spread along horizontal span + subtle wet sheen. |
+
+### `FlamePadding`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `top` | `number` | Extra space **above** the text (px). |
+| `x` | `number` | Horizontal inset on **each** side (px). |
+| `bottom` | `number` | Extra space **below** the text (px). |
 
 ### `IgnitionOptions`
 

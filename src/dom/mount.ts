@@ -2,7 +2,11 @@ import type opentype from 'opentype.js'
 import { loadFontFromUrl } from '../fonts/load.js'
 import { resolveFontUrlFromDocument } from '../fonts/resolve.js'
 import { buildMaskFromCanvasText, buildMaskFromOpenType } from '../geometry/mask.js'
-import { emissionPointsFromTopEdge, filterIgnitionProgress } from '../geometry/emission.js'
+import {
+  emissionPointsFromTopEdge,
+  filterIgnitionProgress,
+  type EmissionPoint,
+} from '../geometry/emission.js'
 import {
   createParticleEngine,
   drawParticles,
@@ -14,6 +18,25 @@ import { temperaturePhysics } from '../temperature.js'
 import type { FlameTextHandle, FlameTextOptions, IgnitionOptions } from '../types.js'
 
 const fontCache = new Map<string, Promise<opentype.Font>>()
+
+/** Default extra canvas beyond text bounds (CSS px) — large top band for plume visibility */
+function resolvePadding(
+  el: HTMLElement,
+  override: FlameTextOptions['flamePadding']
+): { padX: number; padTop: number; padBottom: number } {
+  const cs = getComputedStyle(el)
+  const fs = parseFloat(cs.fontSize) || 16
+  const h = Math.max(1, el.offsetHeight)
+  const o = override
+  const padTop = o?.top ?? Math.max(fs * 1.2, h * 0.55, 56)
+  const padX = o?.x ?? Math.max(fs * 0.45, 24)
+  const padBottom = o?.bottom ?? Math.max(fs * 0.45, 20)
+  return { padX, padTop, padBottom }
+}
+
+function shiftEmission(points: EmissionPoint[], ox: number, oy: number): EmissionPoint[] {
+  return points.map((p) => ({ x: p.x + ox, y: p.y + oy }))
+}
 
 function getOpenTypeFont(url: string): Promise<opentype.Font> {
   let p = fontCache.get(url)
@@ -82,8 +105,15 @@ export function mount(target: string | Element, options: FlameTextOptions = {}):
   const engine = createParticleEngine(el.textContent ?? 'flame')
 
   let emission: ReturnType<typeof emissionPointsFromTopEdge> = []
-  let widthCss = 0
-  let heightCss = 0
+  /** Text box (mask) size */
+  let textW = 0
+  let textH = 0
+  /** Full canvas (text + padding) */
+  let canvasW = 0
+  let canvasH = 0
+  let padX = 0
+  let padTop = 0
+  let padBottom = 0
   let dpr = 1
   let startTime = performance.now()
   let ignitionDone = !ignitionEnabled
@@ -107,14 +137,26 @@ export function mount(target: string | Element, options: FlameTextOptions = {}):
 
   function rebuildGeometry(): void {
     const text = el.textContent ?? ''
-    widthCss = Math.max(1, el.offsetWidth)
-    heightCss = Math.max(1, el.offsetHeight)
+    textW = Math.max(1, el.offsetWidth)
+    textH = Math.max(1, el.offsetHeight)
+    const pad = resolvePadding(el, options.flamePadding)
+    padX = pad.padX
+    padTop = pad.padTop
+    padBottom = pad.padBottom
+    canvasW = textW + padX * 2
+    canvasH = textH + padTop + padBottom
+
+    wrapper.style.paddingTop = `${padTop}px`
+    wrapper.style.paddingLeft = `${padX}px`
+    wrapper.style.paddingRight = `${padX}px`
+    wrapper.style.paddingBottom = `${padBottom}px`
+
     dpr = Math.min(2.5, window.devicePixelRatio || 1)
 
-    canvas.width = Math.max(1, Math.floor(widthCss * dpr))
-    canvas.height = Math.max(1, Math.floor(heightCss * dpr))
-    canvas.style.width = `${widthCss}px`
-    canvas.style.height = `${heightCss}px`
+    canvas.width = Math.max(1, Math.floor(canvasW * dpr))
+    canvas.height = Math.max(1, Math.floor(canvasH * dpr))
+    canvas.style.width = `${canvasW}px`
+    canvas.style.height = `${canvasH}px`
 
     const computed = getComputedStyle(el)
     const font = `${computed.fontStyle} ${computed.fontWeight} ${computed.fontSize} ${computed.fontFamily}`
@@ -126,23 +168,31 @@ export function mount(target: string | Element, options: FlameTextOptions = {}):
         const mask = buildMaskFromOpenType({
           font: otFont,
           text,
-          widthCss,
-          heightCss,
+          widthCss: textW,
+          heightCss: textH,
           dpr,
           fontSizePx,
           textAlign,
         })
-        emission = emissionPointsFromTopEdge(mask.topEdge, mask.dpr, 2)
+        emission = shiftEmission(
+          emissionPointsFromTopEdge(mask.topEdge, mask.dpr, 2),
+          padX,
+          padTop
+        )
       } else {
         const mask = buildMaskFromCanvasText({
           text,
-          widthCss,
-          heightCss,
+          widthCss: textW,
+          heightCss: textH,
           dpr,
           font,
           textAlign,
         })
-        emission = emissionPointsFromTopEdge(mask.topEdge, mask.dpr, 2)
+        emission = shiftEmission(
+          emissionPointsFromTopEdge(mask.topEdge, mask.dpr, 2),
+          padX,
+          padTop
+        )
       }
     } catch {
       emission = []
@@ -176,13 +226,13 @@ export function mount(target: string | Element, options: FlameTextOptions = {}):
     raf = requestAnimationFrame(loop)
     const w = el.offsetWidth
     const h = el.offsetHeight
-    if (w !== widthCss || h !== heightCss) {
+    if (w !== textW || h !== textH) {
       rebuildGeometry()
     }
 
     ctx.setTransform(1, 0, 0, 1, 0, 0)
     ctx.scale(dpr, dpr)
-    ctx.clearRect(0, 0, widthCss, heightCss)
+    ctx.clearRect(0, 0, canvasW, canvasH)
 
     if (reduced) {
       ctx.save()

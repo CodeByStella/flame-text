@@ -35,7 +35,7 @@ The host element must be in the DOM and should use normal flow (the library wrap
 | `mount(selector \| element, options?)` | Attach effect; returns `{ destroy, setTemperature, setIntensity }` |
 | `autoInit()` | Mount every `[data-flame-text]` element with default options |
 
-Options include `fontUrl`, `temperature` (0–1), `intensity`, `particleCount`, `wind`, `ignition`, `respectReducedMotion`. See [docs/api.md](docs/api.md).
+Options include `flamePadding` (extra canvas above/side/below the text so plumes are not clipped), `fontUrl`, `temperature` (0–1), `intensity`, `particleCount`, `wind`, `ignition`, `respectReducedMotion`. See [docs/api.md](docs/api.md).
 
 ## Development
 
