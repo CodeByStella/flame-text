@@ -37,6 +37,11 @@
     "fire"
   ],
   "license": "MIT",
+  "homepage": "https://codebystella.github.io/flame-text/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeByStella/flame-text.git"
+  },
   "dependencies": {
     "opentype.js": "^1.3.4"
   },
