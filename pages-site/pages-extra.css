@@ -1,0 +1,119 @@
+/* GitHub Pages landing — tweaks on top of demo styles */
+
+.showcase-intro {
+  position: relative;
+  z-index: 1;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.showcase-intro code {
+  font-size: 0.8em;
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--stroke);
+}
+
+.embed-docs {
+  position: relative;
+  z-index: 1;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 1.5rem 2rem;
+}
+
+.embed-docs h2 {
+  margin: 0 0 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.embed-docs-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 720px) {
+  .embed-docs-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.embed-card {
+  border-radius: var(--radius);
+  padding: 1.15rem 1.25rem;
+  background: var(--bg-card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--stroke);
+}
+
+.embed-card h3 {
+  margin: 0 0 0.65rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.embed-card p {
+  margin: 0 0 0.65rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.embed-card pre {
+  margin: 0;
+  padding: 0.75rem 0.85rem;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--stroke);
+  font-size: 0.68rem;
+  line-height: 1.45;
+  overflow-x: auto;
+  color: #c8c0d8;
+}
+
+.embed-card a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.embed-card a:hover {
+  text-decoration: underline;
+}
+
+.top-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.top-links a {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  padding: 0.35rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 107, 44, 0.35);
+  background: rgba(255, 107, 44, 0.08);
+}
+
+.top-links a:hover {
+  background: rgba(255, 107, 44, 0.15);
+}
+
+@media (max-width: 640px) {
+  .headline {
+    font-size: clamp(4rem, 22vw, 12rem);
+  }
+}

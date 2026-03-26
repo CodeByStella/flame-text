@@ -13,6 +13,6 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ['dist', 'coverage', 'node_modules'],
+    ignores: ['dist', '_site', 'coverage', 'node_modules'],
   },
 )

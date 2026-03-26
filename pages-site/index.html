@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FlameText — embed &amp; showcase</title>
+    <meta
+      name="description"
+      content="FlameText: oil-on-fire text on canvas. Install via npm or embed the script from this site or a CDN."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;1,9..40,400&family=Noto+Serif+SC:wght@700&family=Yuji+Syuku&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./showcase.css" />
+  </head>
+  <body>
+    <div class="bg-grid" aria-hidden="true"></div>
+    <div class="bg-glow" aria-hidden="true"></div>
+
+    <header class="top">
+      <div class="brand">
+        <span class="brand-name">FlameText</span>
+        <span class="brand-pill">GitHub Pages</span>
+      </div>
+      <div class="top-links">
+        <a href="https://github.com/CodeByStella/flame-text">Repository</a>
+        <a href="https://github.com/CodeByStella/flame-text/blob/main/README.md">README</a>
+        <a href="https://github.com/CodeByStella/flame-text/blob/main/docs/api.md">API</a>
+      </div>
+    </header>
+
+    <section class="embed-docs" aria-labelledby="embed-heading">
+      <h2 id="embed-heading">Use on your site</h2>
+      <div class="embed-docs-grid">
+        <article class="embed-card">
+          <h3>Script tag (IIFE)</h3>
+          <p>
+            Global <code>FlameText</code> — same script this page loads. Replace the host URL if you
+            self-host the files.
+          </p>
+          <pre><code>&lt;script src="https://codebystella.github.io/flame-text/flame-text.iife.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  window.addEventListener('DOMContentLoaded', function () {
+    FlameText.mount('#hero', { temperature: 0.65, intensity: 1 })
+  })
+&lt;/script&gt;</code></pre>
+        </article>
+        <article class="embed-card">
+          <h3>ES module (import URL)</h3>
+          <p>
+            Works in browsers that support <code>type="module"</code> and cross-origin module
+            requests.
+          </p>
+          <pre><code>&lt;script type="module"&gt;
+  import { mount } from 'https://codebystella.github.io/flame-text/flame-text.js'
+  mount('#hero', { temperature: 0.65, intensity: 1 })
+&lt;/script&gt;</code></pre>
+        </article>
+        <article class="embed-card">
+          <h3>npm (bundler)</h3>
+          <p>Publish to npm is separate from this site; when published:</p>
+          <pre><code>npm install @codebystella/flame-text</code></pre>
+          <pre><code>import { mount } from '@codebystella/flame-text'</code></pre>
+        </article>
+        <article class="embed-card">
+          <h3>npm-backed CDN</h3>
+          <p>After the package is on npm, you can use jsDelivr or unpkg, e.g.:</p>
+          <pre><code>https://cdn.jsdelivr.net/npm/@codebystella/flame-text@0.1.0/dist/flame-text.iife.js</code></pre>
+        </article>
+      </div>
+    </section>
+
+    <p class="showcase-intro">
+      Interactive showcase below uses the same <code>flame-text.iife.js</code> as the embed
+      examples. The canvas is transparent except for flame pixels.
+    </p>
+
+    <main class="main">
+      <section class="stage" aria-labelledby="headline">
+        <p class="lede">
+          Full plume above and around the glyph — yellow-white core, orange body, wispy smoke tips
+          (ember-style fill + transparent canvas).
+        </p>
+        <h1 id="headline" class="headline" lang="zh">志</h1>
+        <div class="presets" role="group" aria-label="Sample labels">
+          <span class="presets-label">Words</span>
+          <div class="preset-btns">
+            <button type="button" class="preset" data-word="志">志</button>
+            <button type="button" class="preset" data-word="FLAME">FLAME</button>
+            <button type="button" class="preset" data-word="OIL">OIL</button>
+            <button type="button" class="preset" data-word="BURN">BURN</button>
+            <button type="button" class="preset" data-word="HEAT">HEAT</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <h2 class="panel-title">Controls</h2>
+
+        <div class="field">
+          <div class="field-head">
+            <label for="temp">Temperature</label>
+            <output id="temp-out" for="temp">65%</output>
+          </div>
+          <input id="temp" type="range" min="0" max="100" value="65" />
+          <p class="field-hint">Cooler = slower, smokier · hotter = brighter plume</p>
+        </div>
+
+        <div class="field">
+          <div class="field-head">
+            <label for="int">Intensity</label>
+            <output id="int-out" for="int">100%</output>
+          </div>
+          <input id="int" type="range" min="0" max="100" value="100" />
+        </div>
+
+        <label class="toggle">
+          <input id="ign" type="checkbox" checked />
+          <span class="toggle-ui" aria-hidden="true"></span>
+          <span class="toggle-text">Ignition intro (spread + wet sheen)</span>
+        </label>
+
+        <button type="button" id="replay" class="btn primary">Replay ignition</button>
+      </aside>
+    </main>
+
+    <footer class="foot">
+      <code>https://github.com/CodeByStella/flame-text</code>
+    </footer>
+
+    <script src="./flame-text.iife.js"></script>
+    <script src="./showcase.js"></script>
+  </body>
+</html>

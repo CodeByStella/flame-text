@@ -2,6 +2,9 @@
 
 Embeddable **oil-on-fire** text: transparent canvas overlay, glyph-aware emission (OpenType when a font URL is available, otherwise canvas raster), particle plume, **temperature** and **intensity** controls, optional **ignition** intro.
 
+**Repository:** [github.com/CodeByStella/flame-text](https://github.com/CodeByStella/flame-text)  
+**Live site (how to embed + interactive showcase):** [codebystella.github.io/flame-text/](https://codebystella.github.io/flame-text/)
+
 ## Install (npm / bundler)
 
 ```bash
@@ -12,15 +15,23 @@ npm install @codebystella/flame-text
 import { mount } from '@codebystella/flame-text'
 ```
 
+_(The package must be [published to npm](https://www.npmjs.com/) under that name; until then, use the GitHub Pages script URLs below or install from the git repo.)_
+
 ## CDN / script embed
 
-After each push to `main`, [GitHub Actions](.github/workflows/pages.yml) publishes `dist/` to **GitHub Pages**. Use your real owner and repo name in the URL (this project: `https://codebystella.github.io/flame-text/`).
+After each push to `main`, [GitHub Actions](.github/workflows/pages.yml) builds the library, assembles a small site (landing + showcase), and publishes **`_site/`** to **GitHub Pages**.
 
-| Method | URL pattern |
-|--------|-------------|
-| **GitHub Pages (IIFE)** | `https://OWNER.github.io/REPO/flame-text.iife.js` |
-| **GitHub Pages (ESM)** | `https://OWNER.github.io/REPO/flame-text.js` |
-| **jsDelivr (from npm)** | `https://cdn.jsdelivr.net/npm/@codebystella/flame-text@VERSION/dist/flame-text.iife.js` — pin `VERSION` (e.g. `0.1.0`) or use `@latest` |
+| What                  | URL (this repo)                                                                  |
+| --------------------- | -------------------------------------------------------------------------------- |
+| **Landing + demo**    | [codebystella.github.io/flame-text/](https://codebystella.github.io/flame-text/) |
+| **IIFE (script tag)** | `https://codebystella.github.io/flame-text/flame-text.iife.js`                   |
+| **ESM**               | `https://codebystella.github.io/flame-text/flame-text.js`                        |
+
+For other forks, replace owner/repo: `https://OWNER.github.io/REPO/flame-text.iife.js`.
+
+**jsDelivr / unpkg** (after the package is on npm):
+
+`https://cdn.jsdelivr.net/npm/@codebystella/flame-text@VERSION/dist/flame-text.iife.js` — pin `VERSION` (e.g. `0.1.0`) or use `@latest`.
 
 [unpkg](https://unpkg.com/) serves the same paths under `https://unpkg.com/@codebystella/flame-text@VERSION/dist/…`.
 
@@ -61,10 +72,10 @@ The host element must be in the DOM and should use normal flow (the library wrap
 
 ## API (short)
 
-| Export | Description |
-|--------|-------------|
+| Export                                 | Description                                                        |
+| -------------------------------------- | ------------------------------------------------------------------ |
 | `mount(selector \| element, options?)` | Attach effect; returns `{ destroy, setTemperature, setIntensity }` |
-| `autoInit()` | Mount every `[data-flame-text]` element with default options |
+| `autoInit()`                           | Mount every `[data-flame-text]` element with default options       |
 
 Options include `flamePadding` (extra canvas above/side/below the text so plumes are not clipped), `fontUrl`, `temperature` (0–1), `intensity`, `particleCount`, `wind`, `ignition`, `respectReducedMotion`. See [docs/api.md](docs/api.md).
 
@@ -76,6 +87,12 @@ npm run dev      # demo at http://localhost:5173
 npm run build    # dist/*.js + declarations
 npm test
 npm run lint
+```
+
+Preview the GitHub Pages bundle locally (same as CI):
+
+```bash
+npm run pages:preview   # build + assemble _site/ + static server
 ```
 
 ## Docs

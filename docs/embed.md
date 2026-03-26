@@ -17,7 +17,7 @@ The package resolves to `dist/flame-text.js` (ESM).
 
 ## Public URLs (GitHub Pages + npm CDN)
 
-**GitHub Pages** (built from `main`): replace `OWNER` and `REPO` with your fork. This repo uses `https://codebystella.github.io/flame-text/`.
+**GitHub Pages** (built from `main`): replace `OWNER` and `REPO` with your fork. This repo: **[codebystella.github.io/flame-text/](https://codebystella.github.io/flame-text/)** (landing page with embed snippets + live demo), source **[github.com/CodeByStella/flame-text](https://github.com/CodeByStella/flame-text)**.
 
 - IIFE: `https://OWNER.github.io/REPO/flame-text.iife.js` — global **`FlameText`** (`mount`, `autoInit`).
 - ESM: `https://OWNER.github.io/REPO/flame-text.js` — use in `import` from a `type="module"` script.

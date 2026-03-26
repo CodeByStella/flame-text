@@ -28,7 +28,9 @@
     "test:watch": "npx vitest",
     "test:coverage": "npx vitest run --coverage",
     "lint": "npx eslint .",
-    "format": "npx prettier --write ."
+    "format": "npx prettier --write .",
+    "pages:assemble": "node scripts/assemble-pages.mjs",
+    "pages:preview": "npm run build && npm run pages:assemble && npx --yes serve _site"
   },
   "keywords": [
     "canvas",
