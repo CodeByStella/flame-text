@@ -1,5 +1,7 @@
 # FlameText
 
+<img src="./sample.png" alt="Sample: oil-on-fire text effect" />
+
 Embeddable **oil-on-fire** text: transparent canvas overlay, glyph-aware emission (OpenType when a font URL is available, otherwise canvas raster), particle plume, **temperature** and **intensity** controls, optional **ignition** intro.
 
 **Repository:** [github.com/CodeByStella/flame-text](https://github.com/CodeByStella/flame-text)  
