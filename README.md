@@ -26,6 +26,8 @@ After each push to `main`, [GitHub Actions](.github/workflows/pages.yml) publish
 
 Enable Pages once: repo **Settings → Pages → Source: GitHub Actions**.
 
+If the **deploy** job fails with **404** (“Failed to create deployment”): Pages is not active for this repo yet, or Actions cannot use it. Fix: open **Settings → Pages**, set **Source** to **GitHub Actions**, save, wait a minute, then **re-run** the workflow. You need **admin** on the repo. For an **organization** repo, an org owner may need to allow **GitHub Pages** under org **Settings → Pages** (or **Member privileges**). Under **Settings → Actions → General**, ensure **Workflow permissions** is not locked to read-only in a way that blocks the workflow’s `pages: write` / `id-token: write` scopes.
+
 ## Quick embed (ESM, npm)
 
 ```html
