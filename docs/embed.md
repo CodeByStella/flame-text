@@ -4,8 +4,8 @@
 
 1. **Parent exists** — `mount` inserts a wrapper before your node; the node must have a `parentNode`.
 2. **Transparent overlay** — The canvas uses **alpha**; do not set a background on the injected wrapper (the library does not add one). Your page background shows through.
-3. **Stacking** — Canvas is `position: absolute` with `z-index: 1` inside a `position: relative` wrapper. Raise z-index on siblings if something covers the flame.
-4. **Pointer events** — Overlay has `pointer-events: none` so clicks hit content below.
+3. **Stacking** — Canvas defaults to `z-index: -1` behind the text; use `canvasZIndex` / `setCanvasZIndex` to change. Give siblings `position: relative; z-index` if they must sit above the flame art.
+4. **Pointer events** — Wrapper, target element, and canvas use `pointer-events: none` so clicks reach siblings (the headline’s line box can be large). The canvas does not block interaction.
 
 ## ESM (bundler / `type="module"`)
 

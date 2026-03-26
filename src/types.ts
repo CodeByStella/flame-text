@@ -1,3 +1,7 @@
+import type { FlamePaletteInput } from './palette.js'
+
+export type { FlamePaletteInput } from './palette.js'
+
 export interface IgnitionOptions {
   /** Total duration of intro (wet + spread) in ms */
   durationMs?: number
@@ -17,27 +21,42 @@ export interface FlamePadding {
 export interface FlameTextOptions {
   /**
    * Extra canvas area beyond the text box so rising flames are not clipped.
-   * Defaults scale with font size and text height (strong top bias).
+   * Does **not** expand the wrapper in document flow: the canvas overflows with `position:absolute`
+   * and negative inset; layout size stays the text’s box.
    */
   flamePadding?: FlamePadding
   /** Explicit font file URL (recommended for reliable vector paths + CORS) */
   fontUrl?: string
-  /** 0 = cool/slow/smoky, 1 = hot/fast/bright */
+  /** Scales spawn rate together with `intensity` (particle motion uses the built-in demo model). */
   temperature?: number
-  /** Overall emission strength */
+  /** Overall emission strength (spawn budget per frame). */
   intensity?: number
-  /** Max simultaneous particles (quality) */
+  /** Max simultaneous particles (default 1000, clamped 500–5000). Higher = denser flame, more GPU/CPU cost. */
   particleCount?: number
-  /** Horizontal wind bias (-1 … 1) */
+  /** Reserved; particle motion does not apply wind (demo-style integrator only). */
   wind?: number
   /** Skip animation when user prefers reduced motion */
   respectReducedMotion?: boolean
   /** Intro: oil wet + ignition spread along paths */
   ignition?: boolean | IgnitionOptions
+  /**
+   * Outline (`-webkit-text-stroke`), color from `palette.textStroke` (default `#FEFFF4`).
+   * Default `true`; set `false` to skip stroke only — `palette.textFill` still applies to the glyphs.
+   */
+  textStroke?: boolean
+  /** Override default stroke / fill / flame gradient hex colors. */
+  palette?: FlamePaletteInput
+  /**
+   * CSS `z-index` of the flame canvas (default `-1`, behind the text).
+   * Use `0` or higher to paint flames above siblings; give the text `position: relative; z-index: 1` if it should stay on top.
+   */
+  canvasZIndex?: number | string
 }
 
 export interface FlameTextHandle {
   destroy(): void
   setTemperature(t: number): void
   setIntensity(n: number): void
+  /** Update canvas stacking (`z-index`). */
+  setCanvasZIndex(z: number | string): void
 }

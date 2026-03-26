@@ -1,9 +1,12 @@
-import { mount } from '../src/index.ts'
+import { mount } from '../src/index.js'
 
-const headline = document.querySelector('#headline')
-if (!headline || !(headline instanceof HTMLElement)) {
+const headlineEl = document.querySelector('#headline')
+if (!(headlineEl instanceof HTMLElement)) {
   throw new Error('#headline missing')
 }
+/** Narrowed so nested callbacks (e.g. `remount`) see `HTMLElement`, not `Element | null`. */
+const headline: HTMLElement = headlineEl
+headline.lang = 'zh'
 
 const tempEl = document.querySelector('#temp') as HTMLInputElement
 const intEl = document.querySelector('#int') as HTMLInputElement
@@ -27,14 +30,12 @@ function syncOutputs() {
 
 let handle = mount(headline, {
   ...readOpts(),
-  particleCount: 400,
 })
 
 function remount() {
   handle.destroy()
   handle = mount(headline, {
     ...readOpts(),
-    particleCount: 400,
   })
 }
 
@@ -63,6 +64,7 @@ document.querySelectorAll<HTMLButtonElement>('.preset[data-word]').forEach((btn)
     const word = btn.dataset.word
     if (!word) return
     headline.textContent = word
+    headline.lang = /[\u4e00-\u9fff]/.test(word) ? 'zh' : 'en'
     remount()
   })
 })

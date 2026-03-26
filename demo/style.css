@@ -11,6 +11,8 @@
   --radius: 14px;
   --font-ui: 'DM Sans', system-ui, sans-serif;
   --font-display: 'Bebas Neue', Impact, sans-serif;
+  /* https://fonts.google.com/specimen/Yuji+Syuku */
+  --font-yuji-syuku: 'Yuji Syuku', 'Noto Serif SC', serif;
 }
 
 *,
@@ -135,18 +137,27 @@ body {
 }
 
 .headline {
-  font-family: var(--font-display);
-  font-size: clamp(3.5rem, 14vw, 7.5rem);
+  font-family: var(--font-yuji-syuku), var(--font-display), Georgia, serif;
+  font-size: 30rem;
   line-height: 0.95;
   margin: 0;
   letter-spacing: 0.08em;
-  color: #f5f0ff;
+  /* Dark ember “fuel” letter like reference art */
+  color: #6a1418;
   text-shadow:
-    0 0 60px rgba(255, 90, 40, 0.2),
-    0 2px 0 rgba(0, 0, 0, 0.35);
+    0 1px 0 rgba(0, 0, 0, 0.45),
+    0 0 24px rgba(120, 30, 25, 0.35),
+    0 0 48px rgba(255, 60, 30, 0.12);
+}
+
+#headline:lang(zh) {
+  font-family: var(--font-yuji-syuku);
+  letter-spacing: 0.14em;
 }
 
 .presets {
+  position: relative;
+  z-index: 1;
   margin-top: 2rem;
   display: flex;
   flex-direction: column;

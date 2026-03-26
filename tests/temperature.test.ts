@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { clamp01, flameColor, temperaturePhysics } from '../src/temperature.js'
+import {
+  clamp01,
+  flameColor,
+  flameColorForParticle,
+  flameRadiusLifeScale,
+  temperaturePhysics,
+} from '../src/temperature.js'
 
 describe('temperaturePhysics', () => {
   it('increases rise with temperature', () => {
@@ -13,6 +19,21 @@ describe('flameColor', () => {
     expect(c.r).toBeGreaterThanOrEqual(0)
     expect(c.r).toBeLessThanOrEqual(1)
     expect(c.a).toBeGreaterThan(0)
+  })
+})
+
+describe('flameRadiusLifeScale', () => {
+  it('is largest when young and shrinks with age', () => {
+    expect(flameRadiusLifeScale(1)).toBeGreaterThan(flameRadiusLifeScale(0.5))
+    expect(flameRadiusLifeScale(0.5)).toBeGreaterThan(flameRadiusLifeScale(0))
+  })
+})
+
+describe('flameColorForParticle', () => {
+  it('varies RGB slightly between variants at same life', () => {
+    const a = flameColorForParticle(0.65, 0.6, 0.5, 0.1)
+    const b = flameColorForParticle(0.65, 0.6, 0.5, 0.9)
+    expect(Math.abs(a.g - b.g)).toBeGreaterThan(0.01)
   })
 })
 

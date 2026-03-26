@@ -1,20 +1,29 @@
 import type opentype from 'opentype.js'
 import { loadFontFromUrl } from '../fonts/load.js'
 import { resolveFontUrlFromDocument } from '../fonts/resolve.js'
-import { buildMaskFromCanvasText, buildMaskFromOpenType } from '../geometry/mask.js'
 import {
-  emissionPointsFromTopEdge,
+  buildMaskFromCanvasText,
+  buildMaskFromOpenType,
+  type MaskResult,
+} from '../geometry/mask.js'
+import {
+  emissionPointsFromOutlineEdges,
   filterIgnitionProgress,
   type EmissionPoint,
 } from '../geometry/emission.js'
 import {
+  emissionPointsFromInteriorField,
+  manhattanInteriorDistance,
+} from '../geometry/emissionInterior.js'
+import { buildFlameRadialStops, hexToRgb, mergeFlamePalette } from '../palette.js'
+import {
   createParticleEngine,
+  demoScaleForCanvasHeight,
   drawParticles,
   initPool,
   spawnParticle,
   stepParticle,
 } from '../particles/engine.js'
-import { temperaturePhysics } from '../temperature.js'
 import type { FlameTextHandle, FlameTextOptions, IgnitionOptions } from '../types.js'
 
 const fontCache = new Map<string, Promise<opentype.Font>>()
@@ -28,14 +37,43 @@ function resolvePadding(
   const fs = parseFloat(cs.fontSize) || 16
   const h = Math.max(1, el.offsetHeight)
   const o = override
-  const padTop = o?.top ?? Math.max(fs * 1.2, h * 0.55, 56)
-  const padX = o?.x ?? Math.max(fs * 0.45, 24)
-  const padBottom = o?.bottom ?? Math.max(fs * 0.45, 20)
+  // Reference-style envelope: plume ~0.65× text height above + generous sides (≈1.5–2× text bbox)
+  const padTop = o?.top ?? Math.max(fs * 1.55, h * 0.68, 88)
+  const padX = o?.x ?? Math.max(fs * 0.62, h * 0.14, 32)
+  const padBottom = o?.bottom ?? Math.max(fs * 0.58, h * 0.14, 28)
   return { padX, padTop, padBottom }
 }
 
 function shiftEmission(points: EmissionPoint[], ox: number, oy: number): EmissionPoint[] {
   return points.map((p) => ({ x: p.x + ox, y: p.y + oy }))
+}
+
+/**
+ * Emit from the **full glyph interior** plus explicit **silhouette edges** so outer tips
+ * and thin strokes stay lit (interior-only sampling skews toward thick stroke cores).
+ */
+function mergeAndShiftEmission(mask: MaskResult, ox: number, oy: number): EmissionPoint[] {
+  const dist = manhattanInteriorDistance(mask.inside, mask.rasterW, mask.rasterH)
+  const interior = emissionPointsFromInteriorField(
+    mask.inside,
+    dist,
+    mask.rasterW,
+    mask.rasterH,
+    mask.dpr,
+    1,
+    4800
+  )
+  const outline = emissionPointsFromOutlineEdges(
+    mask.topEdge,
+    mask.bottomEdge,
+    mask.leftEdge,
+    mask.rightEdge,
+    mask.dpr,
+    1
+  )
+  // Extra outline copies so random spawn favors the outer silhouette (tips and thin strokes).
+  const pts = interior.concat(outline, outline, outline)
+  return shiftEmission(pts, ox, oy)
 }
 
 function getOpenTypeFont(url: string): Promise<opentype.Font> {
@@ -66,10 +104,13 @@ export function mount(target: string | Element, options: FlameTextOptions = {}):
   }
   const el: HTMLElement = resolved
 
+  const resolvedPalette = mergeFlamePalette(options.palette)
+  const flameRadialStops = buildFlameRadialStops(resolvedPalette.flame)
+
   let temperature = options.temperature ?? 0.65
   let intensity = options.intensity ?? 1
-  const particleCount = Math.min(800, Math.max(80, options.particleCount ?? 320))
-  const wind = options.wind ?? 0
+  /** Default pool sized for laptops; raise `particleCount` for denser flame on fast GPUs. */
+  const particleCount = Math.min(5000, Math.max(500, options.particleCount ?? 1000))
   const respectMotion = options.respectReducedMotion !== false
 
   const ignitionOpt = options.ignition
@@ -79,12 +120,44 @@ export function mount(target: string | Element, options: FlameTextOptions = {}):
   const ignitionEasing =
     typeof ignitionOpt === 'object' ? ignitionOpt.easing ?? 'ease-in-out' : 'ease-in-out'
 
+  const textStrokeEnabled = options.textStroke !== false
+  const savedStrokeWidth = el.style.webkitTextStrokeWidth
+  const savedStrokeColor = el.style.webkitTextStrokeColor
+  const savedPaintOrder = el.style.paintOrder
+  const savedFillColor = el.style.color
+  const savedPointerEvents = el.style.pointerEvents
+
+  function formatZIndex(z: number | string): string {
+    return typeof z === 'number' && !Number.isFinite(z) ? '-1' : String(z)
+  }
+
+  let canvasZIndex: number | string = options.canvasZIndex ?? -1
+
+  function applyCanvasZIndex(): void {
+    canvas.style.zIndex = formatZIndex(canvasZIndex)
+  }
+
+  function syncTextDecor(): void {
+    el.style.color = resolvedPalette.textFill
+    if (!textStrokeEnabled) return
+    const fs = parseFloat(getComputedStyle(el).fontSize) || 16
+    const strokePx = Math.max(2, Math.min(8, fs * (0.072 + temperature * 0.048)))
+    el.style.webkitTextStrokeWidth = `${strokePx}px`
+    el.style.webkitTextStrokeColor = resolvedPalette.textStroke
+    el.style.paintOrder = 'stroke fill'
+  }
+
   const wrapper = document.createElement('div')
+  /**
+   * Layout box matches the text only; canvas overflows with negative inset.
+   * `pointer-events: none` on wrapper + text so the full line box / canvas overflow never steals clicks
+   * from siblings (e.g. buttons under a huge `font-size`). Canvas stays non-interactive too.
+   */
   wrapper.style.cssText =
-    'position:relative;display:inline-block;max-width:100%;vertical-align:top;'
+    'position:relative;isolation:isolate;display:inline-block;max-width:100%;vertical-align:top;overflow:visible;pointer-events:none;'
   const canvas = document.createElement('canvas')
-  canvas.style.cssText =
-    'position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:1;'
+  canvas.style.cssText = 'position:absolute;pointer-events:none;'
+  applyCanvasZIndex()
   canvas.setAttribute('aria-hidden', 'true')
 
   const parent = el.parentNode
@@ -92,6 +165,7 @@ export function mount(target: string | Element, options: FlameTextOptions = {}):
   parent.insertBefore(wrapper, el)
   wrapper.appendChild(el)
   wrapper.appendChild(canvas)
+  el.style.pointerEvents = 'none'
 
   const ctxRaw = canvas.getContext('2d', { alpha: true })
   if (!ctxRaw) throw new Error('FlameText: 2d context')
@@ -102,9 +176,10 @@ export function mount(target: string | Element, options: FlameTextOptions = {}):
   let rebuildToken = 0
 
   const pool = initPool(particleCount)
+  const freeSlots: number[] = Array.from({ length: particleCount }, (_, i) => i)
   const engine = createParticleEngine(el.textContent ?? 'flame')
 
-  let emission: ReturnType<typeof emissionPointsFromTopEdge> = []
+  let emission: EmissionPoint[] = []
   /** Text box (mask) size */
   let textW = 0
   let textH = 0
@@ -146,21 +221,19 @@ export function mount(target: string | Element, options: FlameTextOptions = {}):
     canvasW = textW + padX * 2
     canvasH = textH + padTop + padBottom
 
-    wrapper.style.paddingTop = `${padTop}px`
-    wrapper.style.paddingLeft = `${padX}px`
-    wrapper.style.paddingRight = `${padX}px`
-    wrapper.style.paddingBottom = `${padBottom}px`
-
     dpr = Math.min(2.5, window.devicePixelRatio || 1)
 
     canvas.width = Math.max(1, Math.floor(canvasW * dpr))
     canvas.height = Math.max(1, Math.floor(canvasH * dpr))
     canvas.style.width = `${canvasW}px`
     canvas.style.height = `${canvasH}px`
+    canvas.style.left = `${-padX}px`
+    canvas.style.top = `${-padTop}px`
 
     const computed = getComputedStyle(el)
     const font = `${computed.fontStyle} ${computed.fontWeight} ${computed.fontSize} ${computed.fontFamily}`
     const textAlign = (computed.textAlign || 'left') as CanvasTextAlign
+    const direction = (computed.direction || 'ltr') as CanvasDirection
     const fontSizePx = parseFloat(computed.fontSize) || 16
 
     try {
@@ -173,12 +246,10 @@ export function mount(target: string | Element, options: FlameTextOptions = {}):
           dpr,
           fontSizePx,
           textAlign,
+          fontCss: font,
+          direction,
         })
-        emission = shiftEmission(
-          emissionPointsFromTopEdge(mask.topEdge, mask.dpr, 2),
-          padX,
-          padTop
-        )
+        emission = mergeAndShiftEmission(mask, padX, padTop)
       } else {
         const mask = buildMaskFromCanvasText({
           text,
@@ -187,16 +258,15 @@ export function mount(target: string | Element, options: FlameTextOptions = {}):
           dpr,
           font,
           textAlign,
+          direction,
         })
-        emission = shiftEmission(
-          emissionPointsFromTopEdge(mask.topEdge, mask.dpr, 2),
-          padX,
-          padTop
-        )
+        emission = mergeAndShiftEmission(mask, padX, padTop)
       }
     } catch {
       emission = []
     }
+
+    syncTextDecor()
   }
 
   let rebuildTimer: ReturnType<typeof setTimeout> | null = null
@@ -238,7 +308,8 @@ export function mount(target: string | Element, options: FlameTextOptions = {}):
       ctx.save()
       ctx.globalCompositeOperation = 'lighter'
       ctx.globalAlpha = 0.35 * intensity
-      ctx.fillStyle = 'rgba(255,120,40,0.4)'
+      const rc = hexToRgb(resolvedPalette.textFill)
+      ctx.fillStyle = `rgba(${rc.r},${rc.g},${rc.b},0.4)`
       for (const p of emission) {
         ctx.beginPath()
         ctx.arc(p.x, p.y, 3, 0, Math.PI * 2)
@@ -259,23 +330,29 @@ export function mount(target: string | Element, options: FlameTextOptions = {}):
       }
     }
 
-    const phys = temperaturePhysics(temperature)
     const points =
       ignitionProgress < 1
         ? filterIgnitionProgress(emission, ignitionProgress)
         : emission
 
-    const spawnRate = Math.floor(4 * phys.spawn * intensity * (0.5 + ignitionProgress))
+    const scale = demoScaleForCanvasHeight(canvasH)
+    // Demo spawns 50/frame; scale by intensity, temperature, ignition, and free slots.
+    const targetSpawn = Math.floor(
+      50 *
+        intensity *
+        (0.45 + 0.55 * ignitionProgress) *
+        (0.65 + 0.35 * temperature)
+    )
+    const spawnRate = Math.min(Math.max(0, targetSpawn), freeSlots.length)
     for (let i = 0; i < spawnRate; i++) {
-      spawnParticle(pool, points, engine.rnd, phys, ignitionProgress)
+      spawnParticle(pool, points, engine.rnd, scale, freeSlots)
     }
 
-    const turb = phys.turbulence
-    for (const p of pool) {
-      stepParticle(p, engine.noise2, engine.noise3, now, wind, turb)
+    for (let i = 0; i < pool.length; i++) {
+      stepParticle(pool[i]!, i, freeSlots, scale)
     }
 
-    drawParticles(ctx, pool, temperature, intensity)
+    drawParticles(ctx, pool, intensity, flameRadialStops)
 
     // Optional wet sheen during early ignition (transparent darkening on stroke only — subtle)
     if (ignitionEnabled && ignitionProgress < 0.35 && ignitionProgress > 0) {
@@ -311,6 +388,13 @@ export function mount(target: string | Element, options: FlameTextOptions = {}):
       cancelAnimationFrame(raf)
       ro.disconnect()
       window.removeEventListener('resize', onWin)
+      el.style.color = savedFillColor
+      el.style.pointerEvents = savedPointerEvents
+      if (textStrokeEnabled) {
+        el.style.webkitTextStrokeWidth = savedStrokeWidth
+        el.style.webkitTextStrokeColor = savedStrokeColor
+        el.style.paintOrder = savedPaintOrder
+      }
       if (canvas.parentNode === wrapper) wrapper.removeChild(canvas)
       if (wrapper.parentNode) {
         wrapper.parentNode.insertBefore(el, wrapper)
@@ -319,9 +403,14 @@ export function mount(target: string | Element, options: FlameTextOptions = {}):
     },
     setTemperature(t: number): void {
       temperature = Math.max(0, Math.min(1, t))
+      syncTextDecor()
     },
     setIntensity(n: number): void {
       intensity = Math.max(0, Math.min(2, n))
+    },
+    setCanvasZIndex(z: number | string): void {
+      canvasZIndex = z
+      applyCanvasZIndex()
     },
   }
 }
