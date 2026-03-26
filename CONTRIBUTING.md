@@ -28,6 +28,14 @@ npm install
 
 Before opening a PR, run **`npm run lint`**, **`npm test`**, and **`npm run build`** and fix any failures.
 
+## Publishing to npm (maintainers)
+
+CI publishes via [.github/workflows/publish-npm.yml](.github/workflows/publish-npm.yml) when a **GitHub Release is published** or when **Publish npm** is run manually (**Actions** tab).
+
+1. Bump **`version`** in `package.json` on `main` and merge.
+2. Create a **release** (and tag) whose name matches that version with a `v` prefix, e.g. version `0.2.0` → tag **`v0.2.0`**. The workflow checks that `package.json` and the tag agree.
+3. In the repo on GitHub: **Settings → Secrets and variables → Actions** → add **`NPM_TOKEN`** with an npm [access token](https://docs.npmjs.com/about-access-tokens) that can publish the **`@codebystella`** scope (org membership or your npm account owning that scope).
+
 ## Project layout
 
 See [docs/development.md](docs/development.md) for a short map of folders and build outputs.

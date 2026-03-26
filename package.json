@@ -39,6 +39,9 @@
     "fire"
   ],
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "homepage": "https://codebystella.github.io/flame-text/",
   "repository": {
     "type": "git",

@@ -15,7 +15,7 @@ npm install @codebystella/flame-text
 import { mount } from '@codebystella/flame-text'
 ```
 
-_(The package must be [published to npm](https://www.npmjs.com/) under that name; until then, use the GitHub Pages script URLs below or install from the git repo.)_
+Publishing is automated: create a [GitHub Release](https://github.com/CodeByStella/flame-text/releases) whose tag matches `package.json` (e.g. tag `v0.1.0` and version `0.1.0`). You can also run **Publish npm** manually under **Actions**. Add an **`NPM_TOKEN`** [repository secret](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions) (npm [granular access token](https://docs.npmjs.com/about-access-tokens) with **Publish**). Until the first successful publish, use the GitHub Pages script URLs below or install from git.
 
 ## CDN / script embed
 
